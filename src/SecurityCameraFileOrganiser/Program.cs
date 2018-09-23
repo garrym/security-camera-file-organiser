@@ -40,6 +40,8 @@ namespace SecurityCameraFileOrganiser
 
             if (IsSecurityCameraImage(fileInfo.Name))
             {
+                Console.Write($"Processing: {fileInfo.Name}... ");
+
                 var datePart = fileInfo.Name.Replace("MDAlarm_", "").Replace(".jpg", "");
 
                 if (DateTime.TryParseExact(datePart, "yyyyMMdd-HHmmss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
@@ -48,8 +50,25 @@ namespace SecurityCameraFileOrganiser
 
                     var newPath = Path.Combine(dateDirectory, fileInfo.Name);
                     if (!File.Exists(newPath))
-                        File.Move(filePath, newPath);
+                    {
+                        Retry.Attempt(() =>
+                        {
+                            File.Move(filePath, newPath);
+                        });
+                        
+                        Console.Write(" moved.");
+                    }
+                    else
+                    {
+                        Console.Write(" skipped. (File already exists).");
+                    }
                 }
+                else
+                {
+                    Console.Write(" skipped. (Unable to parse date).");
+                }
+
+                Console.Write(Environment.NewLine);
             }
         }
 
