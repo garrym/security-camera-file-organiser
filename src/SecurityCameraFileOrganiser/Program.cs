@@ -10,10 +10,13 @@ namespace SecurityCameraFileOrganiser
         static void Main()
         {
             var directory = ConfigurationManager.AppSettings["ImageDirectory"];
-            var fileNames = Directory.GetFiles(directory);
-            foreach (var fileName in fileNames)
+
+
+            var filePaths = Directory.GetFiles(directory);
+            foreach (var filePath in filePaths)
             {
-                var datePart = new FileInfo(fileName).Name.Replace("MDAlarm_", "").Replace(".jpg", "");
+                var fileInfo = new FileInfo(filePath);
+                var datePart = fileInfo.Name.Replace("MDAlarm_", "").Replace(".jpg", "");
 
                 if (DateTime.TryParseExact(datePart, "yyyyMMdd-HHmmss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
                 {
@@ -21,9 +24,11 @@ namespace SecurityCameraFileOrganiser
 
                     var fullDateDirectory = Path.Combine(directory, dateDirectory);
                     if (!Directory.Exists(fullDateDirectory))
-                    {
                         Directory.CreateDirectory(fullDateDirectory);
-                    }
+
+                    var newPath = Path.Combine(fullDateDirectory, fileInfo.Name);
+
+                    File.Move(filePath, newPath);
                 }
             }
         }
