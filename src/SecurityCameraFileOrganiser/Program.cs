@@ -21,7 +21,7 @@ namespace SecurityCameraFileOrganiser
             }
         }
 
-        private static IList<string> GetImageDirectories()
+        private static IEnumerable<string> GetImageDirectories()
         {
             var configurationPaths = ConfigurationManager.AppSettings["ImageDirectories"];
             if (string.IsNullOrWhiteSpace(configurationPaths))
@@ -37,20 +37,36 @@ namespace SecurityCameraFileOrganiser
         private static void ProcessFile(string filePath)
         {
             var fileInfo = new FileInfo(filePath);
-            var datePart = fileInfo.Name.Replace("MDAlarm_", "").Replace(".jpg", "");
 
-            if (DateTime.TryParseExact(datePart, "yyyyMMdd-HHmmss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+            if (IsSecurityCameraImage(fileInfo.Name))
             {
-                var dateDirectory = $"{date.Year:0000}-{date.Month:00}-{date.Day:00}";
+                var datePart = fileInfo.Name.Replace("MDAlarm_", "").Replace(".jpg", "");
 
-                var fullDateDirectory = Path.Combine(fileInfo.DirectoryName, dateDirectory);
-                if (!Directory.Exists(fullDateDirectory))
-                    Directory.CreateDirectory(fullDateDirectory);
+                if (DateTime.TryParseExact(datePart, "yyyyMMdd-HHmmss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+                {
+                    var dateDirectory = CreateDateDirectory(fileInfo.DirectoryName, date);
 
-                var newPath = Path.Combine(fullDateDirectory, fileInfo.Name);
-                if (!File.Exists(newPath))
-                    File.Move(filePath, newPath);
+                    var newPath = Path.Combine(dateDirectory, fileInfo.Name);
+                    if (!File.Exists(newPath))
+                        File.Move(filePath, newPath);
+                }
             }
+        }
+
+        private static bool IsSecurityCameraImage(string fileName)
+        {
+            return fileName.StartsWith("MDAlarm_") && fileName.EndsWith(".jpg");
+        }
+
+        private static string CreateDateDirectory(string parentDirectory, DateTime date)
+        {
+            var dateDirectory = $"{date.Year:0000}-{date.Month:00}-{date.Day:00}";
+
+            var fullDateDirectory = Path.Combine(parentDirectory, dateDirectory);
+            if (!Directory.Exists(fullDateDirectory))
+                Directory.CreateDirectory(fullDateDirectory);
+
+            return fullDateDirectory;
         }
     }
 }
