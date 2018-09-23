@@ -13,14 +13,14 @@ namespace SecurityCameraFileOrganiser
             var fileNames = Directory.GetFiles(directory);
             foreach (var fileName in fileNames)
             {
-                if (DateTime.TryParseExact(fileName, "\\MDAlar\\m_yyyyMMdd-HHmmss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+                var fileInfo = new FileInfo(fileName);
+
+                var datePart = fileInfo.Name.Replace("MDAlarm_", "").Replace(".jpg", "");
+
+                if (DateTime.TryParseExact(datePart, "yyyyMMdd-HHmmss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
                 {
                     Console.WriteLine("Found a date!");
                 }
-
-                //MDAlarm_20170831-203351
-                //2017-08-31
-
             }
         }
     }
