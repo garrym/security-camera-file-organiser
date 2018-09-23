@@ -12,6 +12,12 @@ namespace SecurityCameraFileOrganiser
 
         static void Main()
         {
+            OrganiseDirectories();
+            GenerateGifs();
+        }
+
+        private static void OrganiseDirectories()
+        {
             foreach (var imageDirectory in GetImageDirectories())
             {
                 foreach (var filePath in Directory.GetFiles(imageDirectory))
@@ -86,6 +92,25 @@ namespace SecurityCameraFileOrganiser
                 Directory.CreateDirectory(fullDateDirectory);
 
             return fullDateDirectory;
+        }
+
+        private static void GenerateGifs()
+        {
+            foreach (var imageDirectory in GetImageDirectories())
+            {
+                foreach (var directory in Directory.GetDirectories(imageDirectory))
+                {
+                    GenerateGif(directory);
+                }
+            }
+        }
+
+        private static void GenerateGif(string directory)
+        {
+            var outputPath = Path.Combine(directory, "combined.gif");
+
+            var gifBuilder = new GifBuilder();
+            gifBuilder.Build(Directory.GetFiles(directory), outputPath);
         }
     }
 }
